@@ -6,4 +6,3 @@ import datetime
 
 class Pipeline:
     
- 
