@@ -19,8 +19,14 @@ class Pipeline:
         temp = pd.concat(dfs,ignore_index=True)
         #print(temp.head())
 
+    def orchestrate(self):
+        directory = 'requests'
+        for dir in next(os.walk(directory))[1]:
+            print(dir)
 
 
-year = '\\2021'
+
+#year = '\\2021'
 instance = Pipeline()
-instance.extraction(year)
+#instance.extraction(year)
+instance.orchestrate()
