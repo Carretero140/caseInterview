@@ -8,7 +8,7 @@ from google.cloud import bigquery
 class Pipeline:
     
     """Function that will be used to extract data from json files"""
-    def extraction(self,dir):
+    def __extraction(self,dir):
         print("entered extraction")
         dfs = []
         temp = pd.DataFrame()
@@ -21,7 +21,7 @@ class Pipeline:
         return temp
 
     """Function that transforms the data"""
-    def transformation(self,df):
+    def __transformation(self,df):
         print("entered transform")
         df = df[["method","path","endpoint","view-args","status","user","timestamp","browser","browser-platform","browser-version"]]
         df["method"] = df["method"].astype(str)
@@ -30,7 +30,7 @@ class Pipeline:
         df["view-args"] = df["view-args"].astype(str)
         df["user"] = df["user"].astype(str)
         df["browser"] = df["browser"].astype(str)
-        df["browserplatform"] = df["browser-platform"].astype(str)
+        df["browser-platform"] = df["browser-platform"].astype(str)
         df["browser-version"] = df["browser-version"].astype(str)
         df["year"] = pd.DatetimeIndex(df["timestamp"]).year
         df["month"] = pd.DatetimeIndex(df["timestamp"]).month
@@ -40,7 +40,7 @@ class Pipeline:
         return df
 
     """Function that loads the dataframe into google bigquery"""
-    def load(self,df):
+    def __load(self,df):
         print("entered load")
         credentials_path = 'C:\\pythonProjects\\interview\\CaseInterview.privatekey.json'
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
@@ -65,10 +65,9 @@ class Pipeline:
                 bigquery.SchemaField("day",bigquery.enums.SqlTypeNames.INTEGER),
                 bigquery.SchemaField("hour",bigquery.enums.SqlTypeNames.INTEGER),
             ],
-            write_disposition = "WRITE_TRUNCATE",
+            write_disposition = "WRITE_APPEND",
         )
         job = client.load_table_from_dataframe(df,table_id,job_config=job_config)
-        #job = client.insert_rows_from_dataframe(table = table_id,dataframe=df,chunk_size=500)
         job.result()
 
         table = client.get_table(table_id)
@@ -79,18 +78,18 @@ class Pipeline:
         )
 
     """Function that will orchestrate the entire pipeline"""
-    def orchestrate(self):
+    def __orchestrate(self):
+        print('entered orchestrate')
         directory = 'requests'
         for dir in next(os.walk(directory))[1]:
             path = directory+'\\'+dir
-            df = self.extraction(path)
-            df = self.transformation(df)
-            self.load(df)
-            #print(df.head())
+            df = self.__extraction(path)
+            df = self.__transformation(df)
+            print(df.head())
+            #self.__load(df)
+
+    def __init__(self):
+        self.__orchestrate()
 
 
-
-#year = '\\2021'
 instance = Pipeline()
-#instance.extraction(year)
-instance.orchestrate()
