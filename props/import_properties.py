@@ -2,7 +2,7 @@ from configparser import ConfigParser
 #import os 
 
 config = ConfigParser()
-config.read(r'interview\props\conf.properties')
+config.read('props/conf.properties')
 class Properties:
 
     def get_conf_by_section(section:str):

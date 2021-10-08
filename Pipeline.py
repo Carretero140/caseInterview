@@ -1,5 +1,5 @@
 import os
-from google.cloud.bigquery import schema
+from google.cloud.bigquery import schema, table
 from google.cloud.bigquery.enums import WriteDisposition
 import pandas as pd
 from google.cloud import bigquery
@@ -41,13 +41,13 @@ class Pipeline:
         return df
 
     """Function that loads the dataframe into google bigquery"""
-    def __load(self,df):
+    def __load(self,df,table,credentials):
         print("entered load")
-        credentials_path = 'interview\\CaseInterview.privatekey.json'
+        credentials_path = credentials
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 
         client = bigquery.Client()
-        table_id = 'caseinterview-328200.Log.Records'
+        table_id = table
 
         job_config = bigquery.LoadJobConfig(
             schema = [
@@ -71,27 +71,33 @@ class Pipeline:
         job = client.load_table_from_dataframe(df,table_id,job_config=job_config)
         job.result()
 
-        table = client.get_table(table_id)
+        tab = client.get_table(table_id)
         print(
             "Loaded {} rows and {} columns to {}".format(
-                table.num_rows, len(table.schema),table_id
+                tab.num_rows, len(tab.schema),table_id
             )
         )
 
-    def get_credentials(self):
+    """Function to get credentials dynamically from a properties file"""
+    def __get_credentials(self):
         props = Properties.get_conf_by_section('BigQueryCredentialsDocumentation')
-
+        directory = props.get('directory')
+        table = props.get('table_id')
+        credentials = props.get('credentials_path')
+        print(directory,table,credentials)
+        return directory,table,credentials
 
     """Function that will orchestrate the entire pipeline"""
     def __orchestrate(self):
         print('entered orchestrate')
-        directory = 'requests'
+        directory,table, credentials = self.__get_credentials()
         for dir in next(os.walk(directory))[1]:
             path = directory+'\\'+dir
             df = self.__extraction(path)
             df = self.__transformation(df)
             print(df.head())
-            #self.__load(df)
+            self.__load(df,table,credentials)
+
 
     def __init__(self):
         self.__orchestrate()
