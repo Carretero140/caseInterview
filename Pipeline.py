@@ -3,6 +3,7 @@ from google.cloud.bigquery import schema
 from google.cloud.bigquery.enums import WriteDisposition
 import pandas as pd
 from google.cloud import bigquery
+from props.import_properties import Properties
 
 
 class Pipeline:
@@ -42,7 +43,7 @@ class Pipeline:
     """Function that loads the dataframe into google bigquery"""
     def __load(self,df):
         print("entered load")
-        credentials_path = 'C:\\pythonProjects\\interview\\CaseInterview.privatekey.json'
+        credentials_path = 'interview\\CaseInterview.privatekey.json'
         os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 
         client = bigquery.Client()
@@ -76,6 +77,10 @@ class Pipeline:
                 table.num_rows, len(table.schema),table_id
             )
         )
+
+    def get_credentials(self):
+        props = Properties.get_conf_by_section('BigQueryCredentialsDocumentation')
+
 
     """Function that will orchestrate the entire pipeline"""
     def __orchestrate(self):
